@@ -1,11 +1,15 @@
+/* Sidebar Styles */
 .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 250px;
     background-color: #3700b3;
     color: white;
     padding: 15px;
-    display: flex;
-    flex-direction: column;
-    height: 100vh; /* Full height */
+    height: 100vh;
+    z-index: 999;
+    margin-top: 60px;  /* Offset for the fixed header */
   }
   
   .menu {
