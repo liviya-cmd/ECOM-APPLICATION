@@ -1,4 +1,3 @@
-/* Sidebar Styles */
 .sidebar {
     position: fixed;
     top: 0;
@@ -9,7 +8,7 @@
     padding: 15px;
     height: 100vh;
     z-index: 999;
-    margin-top: 60px;  /* Offset for the fixed header */
+    margin-top: 60px;  
   }
   
   .menu {

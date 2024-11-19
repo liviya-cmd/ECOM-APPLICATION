@@ -23,14 +23,13 @@ export class ProductComponent implements OnInit {
   };
 
   nextId: number = 1;
-  isEditMode: boolean = false; // Flag to check if we are editing a product
-  editingProductId: number | null = null; // Store the id of the product being edited
+  isEditMode: boolean = false; 
+  editingProductId: number | null = null; 
 
   ngOnInit(): void {
     this.loadProducts();
   }
 
-  // Load products from localStorage
   loadProducts(): void {
     const savedProducts = localStorage.getItem('products');
     if (savedProducts) {
@@ -39,48 +38,39 @@ export class ProductComponent implements OnInit {
     }
   }
 
-  // Add or Update a product
   addOrUpdateProduct(): void {
     if (this.newProduct.name && this.newProduct.description && this.newProduct.price) {
       if (this.isEditMode) {
-        // Update product
         const index = this.products.findIndex(p => p.id === this.newProduct.id);
         if (index !== -1) {
           this.products[index] = { ...this.newProduct };
         }
       } else {
-        // Add new product
         this.products.push({ ...this.newProduct, id: this.nextId });
         this.nextId++;
       }
 
-      // Save to localStorage
       this.saveProducts();
 
-      // Reset form
       this.resetForm();
     }
   }
 
-  // Edit an existing product
   editProduct(product: Product): void {
     this.isEditMode = true;
     this.editingProductId = product.id;
-    this.newProduct = { ...product }; // Pre-fill form with product data
+    this.newProduct = { ...product }; 
   }
 
-  // Delete a product
   deleteProduct(id: number): void {
     this.products = this.products.filter(product => product.id !== id);
     this.saveProducts();
   }
 
-  // Save products to localStorage
   saveProducts(): void {
     localStorage.setItem('products', JSON.stringify(this.products));
   }
 
-  // Reset form to add new product
   resetForm(): void {
     this.newProduct = { id: 0, name: '', description: '', price: 0 };
     this.isEditMode = false;
