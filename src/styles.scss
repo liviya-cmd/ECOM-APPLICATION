@@ -1,40 +1,46 @@
-
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
-@use '@angular/material' as mat;
-// Plus imports for other components in your app.
 
-// Include the common styles for Angular Material. We include this here so that you only
-// have to load a single css file for Angular Material in your app.
+// 1. Place the @use statement at the very top of your file.
+@use '@angular/material' as mat;
+
+// 2. Include the common styles for Angular Material.
+// We include this here so that you only have to load a single CSS file for Angular Material in your app.
 // Be sure that you only ever include this mixin once!
 @include mat.core();
 
-// Define the theme object.
+// 3. Define the theme object.
 $code1-theme: mat.define-theme((
   color: (
-    theme-type: light,
-    primary: mat.$azure-palette,
-    tertiary: mat.$blue-palette,
+    theme-type: light,              // Specify light theme type
+    primary: mat.$azure-palette,    // Use the azure palette for the primary color
+    tertiary: mat.$blue-palette,    // Use the blue palette for the tertiary color
   ),
   density: (
-    scale: 0,
+    scale: 0,                       // Set density scale to 0 (default)
   )
 ));
 
-// Include theme styles for core and each component used in your app.
-// Alternatively, you can import and @include the theme mixins for each component
-// that you are using.
+// 4. Apply the theme styles for all components in your app.
 :root {
   @include mat.all-component-themes($code1-theme);
 }
 
-// Comment out the line below if you want to use the pre-defined typography utility classes.
-// For more information: https://material.angular.io/guide/typography#using-typography-styles-in-your-application.
+// Optional: Uncomment to include predefined typography utility classes
+// For more information: https://material.angular.io/guide/typography#using-typography-styles-in-your-application
 // @include mat.typography-hierarchy($code1-theme);
 
-// Comment out the line below if you want to use the deprecated `color` inputs.
+// Optional: Uncomment to use the deprecated `color` inputs
 // @include mat.color-variants-backwards-compatibility($code1-theme);
-/* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+// Add your global styles below
+
+html, body { 
+  height: 100%;  // Set full height for HTML and body
+}
+
+body { 
+  margin: 0; 
+  font-family: Roboto, "Helvetica Neue", sans-serif;  // Set default font for body
+}
+

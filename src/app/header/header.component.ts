@@ -7,7 +7,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HeaderComponent implements OnInit {
   profilePhotoUrl: string = 'https://via.placeholder.com/40';  // Default profile photo
-  userName: string = 'John Doe';  // Default user name
+  userName: string = 'Kumar';  // Default user name
 
   constructor() {}
 
