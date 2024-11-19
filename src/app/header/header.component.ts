@@ -6,14 +6,12 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent implements OnInit {
-  profilePhotoUrl: string = 'https://via.placeholder.com/40';  // Default profile photo
-  userName: string = 'Kumar';  // Default user name
+  profilePhotoUrl: string = 'https://via.placeholder.com/40';  // Example image URL
+  userName: string = 'kumar';  // Example user name
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit(): void {
-    // Example: Fetch user data from a service or API
-    // this.profilePhotoUrl = this.userService.getProfilePhoto();
-    // this.userName = this.userService.getUserName();
+    // You can add logic here to dynamically fetch user data
   }
 }
