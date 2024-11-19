@@ -1,0 +1,97 @@
+.header {
+    background-color: #6200ea;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .logo {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;  /* Takes up the remaining space */
+    max-width: 400px;  /* Optional: control the max-width of the search box */
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 10px;  /* Position the icon inside the input box */
+    color: #6200ea;  /* Icon color */
+    font-size: 18px;  /* Icon size */
+    pointer-events: none;  /* Prevents clicking on the icon */
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 8px 8px 8px 30px;  /* Padding on the left to make space for the icon */
+    font-size: 16px;
+    border: none;
+    border-radius: 25px;
+    background-color: #f0f0f0;
+    color: #6200ea;
+    transition: all 0.3s;
+  }
+  
+  .search-input:focus {
+    outline: none;
+    border-color: #3700b3;
+    background-color: #ffffff;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .profile-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .profile-photo:hover {
+    transform: scale(1.1);
+  }
+  
+  .user-name {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .header {
+      padding: 10px;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .search-box {
+      margin-top: 10px;
+      width: 100%;
+    }
+  
+    .search-input {
+      width: 100%;
+      max-width: none;
+    }
+  
+    .logo {
+      font-size: 20px;
+    }
+  
+    .user-name {
+      font-size: 16px;
+    }
+  }
+  
