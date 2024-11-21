@@ -1,44 +1,47 @@
 <div class="product-container">
   <h2>Product List</h2>
 
+
   <form (ngSubmit)="addOrUpdateProduct()" #productForm="ngForm" class="product-form">
     <div class="form-group">
       <label for="name">Product Name</label>
-      <input
-        id="name"
-        type="text"
-        [(ngModel)]="newProduct.name"
-        name="name"
-        required
-        placeholder="Enter product name"
-        class="form-control"
-      />
+      <input id="name" type="text" [(ngModel)]="newProduct.name" name="name" required placeholder="Enter product name" class="form-control" />
     </div>
 
     <div class="form-group">
       <label for="description">Product Description</label>
-      <input
-        id="description"
-        type="text"
-        [(ngModel)]="newProduct.description"
-        name="description"
-        required
-        placeholder="Enter product description"
-        class="form-control"
-      />
+      <input id="description" type="text" [(ngModel)]="newProduct.description" name="description" required placeholder="Enter product description" class="form-control" />
+    </div>
+
+    <div class="form-group">
+      <label for="offerprice">Offer Price</label>
+      <input id="offerprice" type="text" [(ngModel)]="newProduct.offerprice" name="offerprice" required placeholder="Enter offer price" class="form-control" />
     </div>
 
     <div class="form-group">
       <label for="price">Product Price</label>
-      <input
-        id="price"
-        type="number"
-        [(ngModel)]="newProduct.price"
-        name="price"
-        required
-        placeholder="Enter product price"
-        class="form-control"
-      />
+      <input id="price" type="number" [(ngModel)]="newProduct.price" name="price" required placeholder="Enter product price" class="form-control" />
+    </div>
+    <div class="form-group">
+       <label for="category">Categories</label>
+  <select id="category" [(ngModel)]="newProduct.category" name="category" required class="form-control">
+    <option value="" disabled>Select Category</option>
+    <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+  </select>
+    </div>
+
+    <div class="form-group">
+      <label for="imageUrl">Product Image URL</label>
+      <input id="imageUrl" type="text" [(ngModel)]="newProduct.imageUrl" name="imageUrl" placeholder="Enter product image URL" class="form-control" />
+    </div>
+
+   
+    <div class="form-group">
+      <label for="uploadimg">Upload Image</label>
+      <input type="file" id="uploadimg" name="uploadimg" (change)="onFileSelected($event)" class="form-control" />
+      <div *ngIf="imagePreview" class="mt-2">
+        <img [src]="imagePreview" alt="Image Preview" width="150" height="150" />
+      </div>
     </div>
 
     <button type="submit" class="btn btn-primary" [disabled]="!productForm.valid">
@@ -48,6 +51,7 @@
 
   <hr />
 
+
   <table class="table table-bordered mt-4">
     <thead>
       <tr>
@@ -55,7 +59,10 @@
         <th>Product Name</th>
         <th>Product Description</th>
         <th>Product Price</th>
+        <th>Product Image</th>
         <th>Actions</th>
+        <th>Upload Image</th>
+        <th>Category</th>
       </tr>
     </thead>
     <tbody>
@@ -64,10 +71,15 @@
         <td>{{ product.name }}</td>
         <td>{{ product.description }}</td>
         <td>{{ product.price | currency }}</td>
+        <td><img [src]="product.imageUrl" alt="Product Image" width="100" height="100" /></td>
         <td>
           <button (click)="editProduct(product)" class="btn btn-warning btn-sm">Edit</button>
           <button (click)="deleteProduct(product.id)" class="btn btn-danger btn-sm">Delete</button>
         </td>
+        <td>
+          <img *ngIf="product.uploadimg" [src]="product.uploadimg" alt="Uploaded Image" width="150" height="150" />
+        </td>
+        <td>{{product.category}}</td>
       </tr>
     </tbody>
   </table>
