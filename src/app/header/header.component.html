@@ -1,16 +1,17 @@
 <header class="header">
-    <img src="assets/logo.png" alt="logo" class="logo">
-    
-    <div class="search-box">
+  <img src="assets/logo.png" alt="logo" class="logo">
+  
+  <div class="search-box">
       <div class="search-icon">
-        <i class="fas fa-search"></i>
+          <i class="fas fa-search"></i>
       </div>
       <input type="text" placeholder="Search..." class="search-input" />
-    </div>
-    
-    <div class="user-info">
+  </div>
+  
+  <div class="user-info">
       <img class="profile-photo" [src]="profilePhotoUrl" alt="Profile Photo" />
       <span class="user-name">{{ userName }}</span>
-    </div>
-  </header>
-  
+      <!-- Logout Button -->
+      <button (click)="logout()" class="logout-btn">Logout</button>
+  </div>
+</header>

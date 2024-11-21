@@ -1,6 +1,6 @@
 export const environment = {
     production: false,
-    firebaseConfig: {
+    firebase: {
         apiKey: "AIzaSyC45iUioCU1sltnkk-U1TprqPmIkaRvjHI",
         authDomain: "liviya-84582.firebaseapp.com",
         databaseURL: "https://liviya-84582-default-rtdb.firebaseio.com",
@@ -9,6 +9,5 @@ export const environment = {
         messagingSenderId: "916427892030",
         appId: "1:916427892030:web:028f262422b024cf27f86f",
         measurementId: "G-KBEK5GP226"
-    }
-  };
-  
+     }
+  };

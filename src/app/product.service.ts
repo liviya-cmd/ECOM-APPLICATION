@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase } from '@angular/fire/compat/database';  
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   description: string;
   price: number;
+  imageUrl: string;
 }
 
 @Injectable({
@@ -14,33 +17,47 @@ interface Product {
 })
 export class ProductService {
 
-  constructor(private db: AngularFireDatabase) { }
+  constructor(private firestore: AngularFirestore) {}
 
-  // Get all products from Firebase (this will provide real-time updates)
   getProducts(): Observable<Product[]> {
-    return this.db.list<Product>('products').valueChanges();
+    return this.firestore.collection<Product>('products').snapshotChanges().pipe(
+      map(actions =>
+        actions.map(a => {
+          const data = a.payload.doc.data() as Product;
+          const id = a.payload.doc.id; 
+          return { ...data, id }; 
+        })
+      )
+    );
   }
 
-  // Add a product to Firebase
-  addProduct(product: Product): void {
-    this.db.list('products').push(product);
+  addProduct(product: Product): Promise<void> {
+    const id = this.firestore.createId();  
+    return this.firestore.collection('products').doc(id).set({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      imageUrl: product.imageUrl,
+      id: id  
+    });
   }
+  
 
-  // Update a product in Firebase
-  updateProduct(product: Product): void {
-    if (product.id != null) { // Ensure id is valid
-      this.db.list('products').update(product.id.toString(), { ...product });
+  updateProduct(product: Product): Promise<void> {
+    if (product.id != null) {
+      return this.firestore.collection('products').doc(product.id).update({
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        imageUrl: product.imageUrl
+      });
     } else {
       console.error('Product id is null or undefined');
+      return Promise.reject('Invalid product id');
     }
   }
 
-  // Delete a product from Firebase
-  deleteProduct(id: number): void {
-    if (id != null) { // Ensure id is valid
-      this.db.list('products').remove(id.toString());
-    } else {
-      console.error('Product id is null or undefined');
-    }
+  deleteProduct(id: string): Promise<void> {
+    return this.firestore.collection('products').doc(id).delete();
   }
 }

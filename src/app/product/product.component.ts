@@ -2,10 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../product.service';
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   description: string;
   price: number;
+  imageUrl: string; 
 }
 
 @Component({
@@ -14,74 +15,66 @@ interface Product {
   styleUrls: ['./product.component.scss']
 })
 export class ProductComponent implements OnInit {
-
-  products: Product[] = [];
+  products: Product[] = [];  
   newProduct: Product = {
-    id: 0,
-    name: '',
-    description: '',
-    price: 0
-  };
-
-  nextId: number = 1;
-  isEditMode: boolean = false; // Flag to check if we are editing a product
-  editingProductId: number | null = null; // Store the id of the product being edited
+    id: '', name: '', description: '', price: 0,
+    imageUrl: ''  
+  };  
+  isEditMode: boolean = false;  
+  editingProductId: string | null = null;  
+  isFormVisible: boolean = false;  
+  
+  constructor(private productService: ProductService) { }
 
   ngOnInit(): void {
-    this.loadProducts();
+    this.loadProducts();  
   }
 
-  // Load products from localStorage
   loadProducts(): void {
-    const savedProducts = localStorage.getItem('products');
-    if (savedProducts) {
-      this.products = JSON.parse(savedProducts);
-      this.nextId = this.products.length > 0 ? Math.max(...this.products.map(p => p.id)) + 1 : 1;
-    };
+    this.productService.getProducts().subscribe((products) => {
+      this.products = products;
+    });
   }
 
   addOrUpdateProduct(): void {
     if (this.newProduct.name && this.newProduct.description && this.newProduct.price) {
-      if (this.isEditMode) {
-        // Update product
-        const index = this.products.findIndex(p => p.id === this.newProduct.id);
-        if (index !== -1) {
-          this.products[index] = { ...this.newProduct };
-        }
+      if (this.isEditMode && this.editingProductId) {
+        this.newProduct.id = this.editingProductId!;
+        this.productService.updateProduct(this.newProduct).then(() => {
+          this.resetForm();
+          this.loadProducts();  
+        }).catch(error => console.error("Error updating product: ", error));
       } else {
-        // Add new product
-        this.products.push({ ...this.newProduct, id: this.nextId });
-        this.nextId++;
+       
+        this.productService.addProduct(this.newProduct).then(() => {
+          this.resetForm();
+          this.loadProducts();  
+        }).catch(error => console.error("Error adding product: ", error));
       }
-
-      // Save to localStorage
-      this.saveProducts();
-
-      // Reset form
-      this.resetForm();
     }
   }
 
-  // Edit an existing product
+  toggleForm(): void {
+    this.isFormVisible = !this.isFormVisible;
+  }
+
   editProduct(product: Product): void {
     this.isEditMode = true;
     this.editingProductId = product.id;
-    this.newProduct = { ...product }; // Pre-fill form with product data
+    this.newProduct = { ...product };  
+    this.toggleForm();  
   }
 
-  deleteProduct(id: number): void {
-    this.products = this.products.filter(product => product.id !== id);
-    this.saveProducts();
-  }
-
-  // Save products to localStorage
-  saveProducts(): void {
-    localStorage.setItem('products', JSON.stringify(this.products));
+  deleteProduct(id: string): void {
+    this.productService.deleteProduct(id).then(() => {
+      this.loadProducts();  
+    }).catch(error => console.error("Error deleting product: ", error));
   }
 
   resetForm(): void {
-    this.newProduct = { id: 0, name: '', description: '', price: 0 };
+    this.newProduct = { id: '', name: '', description: '', price: 0, imageUrl: '' };  
     this.isEditMode = false;
     this.editingProductId = null;
+    this.toggleForm();  
   }
 }
