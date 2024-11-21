@@ -10,6 +10,7 @@ interface Product {
   imageUrl: string;
   offerprice: string;
   uploadimg: string;
+  category:string;
 }
 
 @Injectable({

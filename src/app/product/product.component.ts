@@ -11,6 +11,7 @@ interface Product {
   imageUrl: string;
   offerprice: string;
   uploadimg: string ;
+  category:string;
 }
 
 @Component({
@@ -28,12 +29,15 @@ export class ProductComponent implements OnInit {
     imageUrl: '',
     offerprice: '',
     uploadimg: '',
+    category:''
   };
   isEditMode: boolean = false;
   editingProductId: string | null = null;
   imagePreview: string | null = null;
   imageUrl: string = '';
   uploadimg:string = '';
+categories: any;
+category: any;
 
   constructor(
     private productService: ProductService,
@@ -43,6 +47,7 @@ export class ProductComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProducts();
+    this.loadCategories();
   }
 
   loadProducts(): void {
@@ -50,6 +55,14 @@ export class ProductComponent implements OnInit {
       this.products = products;
     });
   }
+  loadCategories(): void {
+  const savedCategories = localStorage.getItem('categories');
+  if (savedCategories) {
+    const categories = JSON.parse(savedCategories);
+    this.categories = categories.map((cat: any) => cat.name); 
+  }
+}
+  
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -57,17 +70,14 @@ export class ProductComponent implements OnInit {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       
-      // Create a FileReader
+   
       const reader = new FileReader();
       
-      // Set up the onload event to create blob URL
       reader.onload = (e: ProgressEvent<FileReader>) => {
-        // Create blob URL
         this.uploadimg = e.target?.result as string;
         this.imagePreview=e.target?.result as string
       };
       
-      // Read the file as data URL
       reader.readAsDataURL(file);
       
     }
@@ -84,7 +94,8 @@ export class ProductComponent implements OnInit {
       this.newProduct.name &&
       this.newProduct.description &&
       this.newProduct.price &&
-      this.newProduct.offerprice
+      this.newProduct.offerprice &&
+      this.newProduct.category
     ) {
       if (this.isEditMode && this.editingProductId) {
         this.newProduct.id = this.editingProductId;
@@ -135,6 +146,7 @@ export class ProductComponent implements OnInit {
       imageUrl: '',
       offerprice: '',
       uploadimg: '',
+      category:'',
     };
     this.imagePreview = null;
     this.imageUrl = '';
