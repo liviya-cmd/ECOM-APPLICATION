@@ -9,7 +9,6 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
 }
 
 @Injectable({
@@ -17,43 +16,23 @@ interface Product {
 })
 export class ProductService {
 
-  constructor(private firestore: AngularFirestore) {}
+  constructor(private db: AngularFireDatabase) { }
 
   getProducts(): Observable<Product[]> {
-    return this.firestore.collection<Product>('products').snapshotChanges().pipe(
-      map(actions =>
-        actions.map(a => {
-          const data = a.payload.doc.data() as Product;
-          const id = a.payload.doc.id; 
-          return { ...data, id }; 
-        })
-      )
-    );
+    return this.db.list<Product>('products').valueChanges();
   }
 
-  addProduct(product: Product): Promise<void> {
-    const id = this.firestore.createId();  
-    return this.firestore.collection('products').doc(id).set({
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      imageUrl: product.imageUrl,
-      id: id  
-    });
+  // Add a product to Firebase
+  addProduct(product: Product): void {
+    this.db.list('products').push(product);
   }
-  
 
-  updateProduct(product: Product): Promise<void> {
-    if (product.id != null) {
-      return this.firestore.collection('products').doc(product.id).update({
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        imageUrl: product.imageUrl
-      });
+  // Update a product in Firebase
+  updateProduct(product: Product): void {
+    if (product.id != null) { // Ensure id is valid
+      this.db.list('products').update(product.id.toString(), { ...product });
     } else {
       console.error('Product id is null or undefined');
-      return Promise.reject('Invalid product id');
     }
   }
 

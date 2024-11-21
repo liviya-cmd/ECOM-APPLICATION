@@ -3,35 +3,45 @@
   <div class="product-container">
   <h2>Product List</h2>
 
-  <button (click)="toggleForm()" class="btn btn-primary mb-4">
-    Add Product
-  </button>
+  <form (ngSubmit)="addOrUpdateProduct()" #productForm="ngForm" class="product-form">
+    <div class="form-group">
+      <label for="name">Product Name</label>
+      <input
+        id="name"
+        type="text"
+        [(ngModel)]="newProduct.name"
+        name="name"
+        required
+        placeholder="Enter product name"
+        class="form-control"
+      />
+    </div>
 
-  <div class="overlay" *ngIf="isFormVisible"></div>
+    <div class="form-group">
+      <label for="description">Product Description</label>
+      <input
+        id="description"
+        type="text"
+        [(ngModel)]="newProduct.description"
+        name="description"
+        required
+        placeholder="Enter product description"
+        class="form-control"
+      />
+    </div>
 
-  <div *ngIf="isFormVisible" class="product-form-container">
-    <div class="close" (click)="toggleForm()">&#10006;</div> 
-
-    <form (ngSubmit)="addOrUpdateProduct()" #productForm="ngForm" class="product-form">
-      <div class="form-group">
-        <label for="name">Product Name</label>
-        <input id="name" type="text" [(ngModel)]="newProduct.name" name="name" required placeholder="Enter product name" class="form-control" />
-      </div>
-
-      <div class="form-group">
-        <label for="description">Product Description</label>
-        <input id="description" type="text" [(ngModel)]="newProduct.description" name="description" required placeholder="Enter product description" class="form-control" />
-      </div>
-
-      <div class="form-group">
-        <label for="price">Product Price</label>
-        <input id="price" type="number" [(ngModel)]="newProduct.price" name="price" required placeholder="Enter product price" class="form-control" />
-      </div>
-
-      <div class="form-group">
-        <label for="imageUrl">Product Image URL</label>
-        <input id="imageUrl" type="text" [(ngModel)]="newProduct.imageUrl" name="imageUrl" required placeholder="Enter product image URL" class="form-control" />
-      </div>
+    <div class="form-group">
+      <label for="price">Product Price</label>
+      <input
+        id="price"
+        type="number"
+        [(ngModel)]="newProduct.price"
+        name="price"
+        required
+        placeholder="Enter product price"
+        class="form-control"
+      />
+    </div>
 
       <button type="submit" class="btn btn-primary" [disabled]="!productForm.valid">
         {{ isEditMode ? 'Update Product' : 'Add Product' }}
@@ -39,7 +49,9 @@
     </form>
   </div>
 
-  <table class="table table-bordered mt-4" [class.disabled]="isFormVisible">
+  <hr />
+
+  <table class="table table-bordered mt-4">
     <thead>
       <tr>
         <th>Product ID</th>
@@ -48,6 +60,8 @@
         <th>Product Price</th>
         <th>Product Image</th>
         <th>Actions</th>
+        <th>Upload Image</th>
+        <th>Category</th>
       </tr>
     </thead>
     <tbody>
@@ -56,11 +70,14 @@
         <td>{{ product.name }}</td>
         <td>{{ product.description }}</td>
         <td>{{ product.price | currency }}</td>
-        <td><img [src]="product.imageUrl" alt="Product Image" width="100" height="100" /></td>
-        <td class="action-icons">
-          <i (click)="editProduct(product)" class="fas fa-edit edit-icon" title="Edit"></i>
-          <i (click)="deleteProduct(product.id)" class="fas fa-trash delete-icon" title="Delete"></i>
+        <td>
+          <button (click)="editProduct(product)" class="btn btn-warning btn-sm">Edit</button>
+          <button (click)="deleteProduct(product.id)" class="btn btn-danger btn-sm">Delete</button>
         </td>
+        <td>
+          <img *ngIf="product.uploadimg" [src]="product.uploadimg" alt="Uploaded Image" width="150" height="150" />
+        </td>
+        <td>{{product.category}}</td>
       </tr>
     </tbody>
   </table>
