@@ -1,12 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword, deleteUser } from 'firebase/auth';
-import { environment } from '../../environments/environment';
-
-const app = initializeApp(environment.firebase);
-const db = getFirestore(app);
-const auth = getAuth(app);
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Auth, EmailAuthProvider, reauthenticateWithCredential, updateEmail } from '@firebase/auth'; // Correct import
 
 @Component({
   selector: 'app-user',
@@ -18,155 +13,159 @@ export class UserComponent implements OnInit {
   lastName: string = '';
   email: string = '';
   password: string = '';
-  users: any[] = [];
-  isFormVisible: boolean = false;
-  passwordError: boolean = false;
-  isLoading: boolean = false;
-  userToEditId: string | null = null;
+  userId: string | null = null;
 
-  constructor() {}
+  users: { firstName: string, lastName: string, email: string, id: string }[] = [];
 
-  ngOnInit(): void {
-    this.getUsers();
+  constructor(
+    private afAuth: AngularFireAuth,
+    private firestore: AngularFirestore
+  ) {}
+
+  ngOnInit() {
+    this.loadUsers();
   }
 
-  toggleForm() {
-    this.isFormVisible = !this.isFormVisible;
-  }
-
-  validatePassword(password: string): boolean {
-    return password.length >= 6;
-  }
-
-  // Method to add a new user
-  async addUser() {
-    if (!this.validatePassword(this.password)) {
-      this.passwordError = true;
-      return;
-    } else {
-      this.passwordError = false;
-    }
-
-    this.isLoading = true;
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.password);
-      const user = userCredential.user;
-
-      const docRef = await addDoc(collection(db, 'users'), {
-        firstName: this.firstName,
-        lastName: this.lastName,
-        email: this.email,
-        firebaseUID: user.uid,
-      });
-
-      console.log('User added with Firestore ID: ', docRef.id);
-
-      this.users.push({
-        firstName: this.firstName,
-        lastName: this.lastName,
-        email: this.email,
-        firebaseUID: user.uid,
-        id: docRef.id,
-      });
-
-      this.firstName = '';
-      this.lastName = '';
-      this.email = '';
-      this.password = '';
-      this.isFormVisible = false;
-
-      this.isLoading = false;
-    } catch (error) {
-      console.error('Error adding user: ', error);
-      this.isLoading = false;
-    }
-  }
-
-  // Method to get users from Firestore
-  async getUsers() {
-    try {
-      const querySnapshot = await getDocs(collection(db, 'users'));
+  // Load all users from Firestore
+  loadUsers() {
+    this.firestore.collection('users').get().subscribe(querySnapshot => {
       this.users = [];
-      querySnapshot.forEach((doc) => {
-        this.users.push({ id: doc.id, ...doc.data() });
+      querySnapshot.forEach(doc => {
+        const data = doc.data() as { firstName: string, lastName: string, email: string };
+        this.users.push({
+          ...data,
+          id: doc.id
+        });
       });
-      console.log('Users fetched:', this.users);
-    } catch (error) {
-      console.error('Error getting users: ', error);
-    }
+    });
   }
 
-  // Method to edit a user
-  editUser(user: any) {
-    this.userToEditId = user.id;
-    this.firstName = user.firstName;
-    this.lastName = user.lastName;
-    this.email = user.email;
-    this.password = ''; // Do not load the password for security
-  }
-
-  // Method to update a user's details
-  async updateUser() {
-    if (!this.validatePassword(this.password)) {
-      this.passwordError = true;
+  // Create a new user in Firebase Authentication and Firestore
+  createUser() {
+    if (!this.firstName || !this.lastName || !this.email || !this.password) {
+      alert('Please fill in all fields.');
       return;
-    } else {
-      this.passwordError = false;
     }
 
-    this.isLoading = true;
-    try {
-      const userDoc = doc(db, 'users', this.userToEditId!);
-      await updateDoc(userDoc, {
-        firstName: this.firstName,
-        lastName: this.lastName,
-        email: this.email,
+    this.afAuth.createUserWithEmailAndPassword(this.email, this.password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        if (user) {
+          const userData = {
+            firstName: this.firstName,
+            lastName: this.lastName,
+            email: this.email,
+          };
+
+          this.firestore.collection('users').doc(user.uid).set(userData)
+            .then(() => {
+              console.log('User added successfully to Firestore');
+              this.loadUsers();
+              this.clearFields();
+            })
+            .catch((error) => {
+              console.error('Error saving user to Firestore:', error);
+            });
+        }
+      })
+      .catch((error) => {
+        console.error('Error creating user in Firebase Authentication:', error);
       });
-
-      // Update the users list
-      const index = this.users.findIndex((user) => user.id === this.userToEditId);
-      if (index !== -1) {
-        this.users[index] = {
-          id: this.userToEditId,
-          firstName: this.firstName,
-          lastName: this.lastName,
-          email: this.email,
-          firebaseUID: this.users[index].firebaseUID,
-        };
-      }
-
-      this.resetForm();
-      this.isLoading = false;
-    } catch (error) {
-      console.error('Error updating user: ', error);
-      this.isLoading = false;
-    }
   }
 
-  // Method to remove a user
-  async removeUser(userId: string) {
-    this.isLoading = true;
-    try {
-      const userDoc = doc(db, 'users', userId);
-      await deleteDoc(userDoc);
-
-      // Remove the user from the users list
-      this.users = this.users.filter((user) => user.id !== userId);
-
-      this.isLoading = false;
-    } catch (error) {
-      console.error('Error deleting user: ', error);
-      this.isLoading = false;
-    }
-  }
-
-  // Reset the form fields
-  resetForm() {
+  // Clear the form fields
+  clearFields() {
     this.firstName = '';
     this.lastName = '';
     this.email = '';
     this.password = '';
-    this.userToEditId = null;
-    this.isFormVisible = false;
+    this.userId = null;
+  }
+
+  // Set fields to edit a user
+  editUser(user: { firstName: string, lastName: string, email: string, id: string }) {
+    this.firstName = user.firstName;
+    this.lastName = user.lastName;
+    this.email = user.email;
+    this.userId = user.id;
+  }
+
+  // Save changes to the user (update user)
+  saveUser() {
+    if (!this.userId) {
+      alert('No user selected for editing');
+      return;
+    }
+
+    const updatedData = {
+      firstName: this.firstName,
+      lastName: this.lastName,
+      email: this.email,
+    };
+
+    this.firestore.collection('users').doc(this.userId).update(updatedData)
+      .then(() => {
+        console.log('User data updated successfully in Firestore');
+
+        // Update email in Firebase Authentication only if the current user is being edited
+        this.afAuth.currentUser.then(currentUser => {
+          if (currentUser && currentUser.uid === this.userId) {
+            // Re-authenticate the user to update email
+            const credential = EmailAuthProvider.credential(currentUser.email || '', this.password);
+
+            reauthenticateWithCredential(currentUser, credential)
+              .then(() => {
+                // After successful re-authentication, update the email
+                updateEmail(currentUser, this.email)
+                  .then(() => {
+                    console.log('Email updated successfully in Firebase Authentication');
+                  })
+                  .catch((error) => {
+                    console.error('Error updating email in Firebase Authentication:', error);
+                  });
+              })
+              .catch((error) => {
+                console.error('Re-authentication failed:', error);
+              });
+          } else {
+            console.log('The user being edited is not the currently authenticated user.');
+          }
+        });
+
+        this.loadUsers();
+        this.clearFields();
+      })
+      .catch(error => {
+        console.error('Error updating user in Firestore:', error);
+      });
+  }
+
+  // Delete a user
+  deleteUser(userId: string) {
+    console.log('Attempting to delete user with ID:', userId);
+
+    this.firestore.collection('users').doc(userId).delete()
+      .then(() => {
+        console.log('User deleted successfully from Firestore');
+
+        this.afAuth.currentUser.then(currentUser => {
+          if (currentUser && currentUser.uid === userId) {
+            currentUser.delete()
+              .then(() => {
+                console.log('User deleted successfully from Firebase Authentication');
+              })
+              .catch(error => {
+                console.error('Error deleting user from Firebase Authentication:', error);
+              });
+          } else {
+            console.log('The user being deleted is not the currently authenticated user.');
+          }
+        });
+
+        this.loadUsers();
+      })
+      .catch(error => {
+        console.error('Error deleting user from Firestore:', error);
+      });
   }
 }

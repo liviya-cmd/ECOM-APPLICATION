@@ -4,12 +4,13 @@ import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 
 interface Product {
-uploadimg: any;
-category: any;
   id: string;
   name: string;
   description: string;
   price: number;
+  offerprice: string;
+  uploadimg: string ;
+  category:string;
 }
 
 @Component({
@@ -18,75 +19,132 @@ category: any;
   styleUrls: ['./product.component.scss'],
 })
 export class ProductComponent implements OnInit {
-
   products: Product[] = [];
   newProduct: Product = {
-    id: 0,
+    id: '',
     name: '',
     description: '',
-    price: 0
+    price: 0,
+    offerprice: '',
+    uploadimg: '',
+    category:''
   };
+  isEditMode: boolean = false;
+  editingProductId: string | null = null;
+  imagePreview: string | null = null;
+  uploadimg:string = '';
+categories: any;
+category: any;
 
-  nextId: number = 1;
-  isEditMode: boolean = false; // Flag to check if we are editing a product
-  editingProductId: number | null = null; // Store the id of the product being edited
+  constructor(
+    private productService: ProductService,
+    private storage: AngularFireStorage,
+    private firestore: AngularFirestore
+  ) {}
 
   ngOnInit(): void {
     this.loadProducts();
+    this.loadCategories();
   }
 
   loadProducts(): void {
-    const savedProducts = localStorage.getItem('products');
-    if (savedProducts) {
-      this.products = JSON.parse(savedProducts);
-      this.nextId = this.products.length > 0 ? Math.max(...this.products.map(p => p.id)) + 1 : 1;
-    };
+    this.productService.getProducts().subscribe((products) => {
+      this.products = products;
+    });
   }
+  loadCategories(): void {
+  const savedCategories = localStorage.getItem('categories');
+  if (savedCategories) {
+    const categories = JSON.parse(savedCategories);
+    this.categories = categories.map((cat: any) => cat.name); 
+  }
+}
+  
 
-  addOrUpdateProduct(): void {
-    if (this.newProduct.name && this.newProduct.description && this.newProduct.price) {
-      if (this.isEditMode) {
-        // Update product
-        const index = this.products.findIndex(p => p.id === this.newProduct.id);
-        if (index !== -1) {
-          this.products[index] = { ...this.newProduct };
-        }
-      } else {
-        // Add new product
-        this.products.push({ ...this.newProduct, id: this.nextId });
-        this.nextId++;
-      }
-
-      // Save to localStorage
-      this.saveProducts();
-
-      // Reset form
-      this.resetForm();
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      
+   
+      const reader = new FileReader();
+      
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        this.uploadimg = e.target?.result as string;
+        this.imagePreview=e.target?.result as string
+      };
+      
+      reader.readAsDataURL(file);
+      
     }
   }
 
-  // Edit an existing product
+  ngOnDestroy(): void {
+    if (this.uploadimg) {
+      URL.revokeObjectURL(this.uploadimg);
+    }
+  }
+
+  addOrUpdateProduct(): void {
+    if (
+      this.newProduct.name &&
+      this.newProduct.description &&
+      this.newProduct.price &&
+      this.newProduct.offerprice &&
+      this.newProduct.category
+    ) {
+      if (this.isEditMode && this.editingProductId) {
+        this.newProduct.id = this.editingProductId;
+        this.productService.updateProduct(this.newProduct)
+          .then(() => {
+            this.resetForm();
+            this.loadProducts();
+          })
+          .catch((error) => console.error('Error updating product: ', error));
+      } else {
+       
+        this.newProduct.offerprice = this.newProduct.offerprice || '';
+        this.newProduct.uploadimg = this.uploadimg || this.newProduct.uploadimg ;
+
+        this.productService.addProduct(this.newProduct)
+          .then(() => {
+            this.resetForm();
+            this.loadProducts();
+          })
+          .catch((error) => console.error('Error adding product: ', error));
+      }
+    }
+  }
+
   editProduct(product: Product): void {
     this.isEditMode = true;
     this.editingProductId = product.id;
-    this.newProduct = { ...product }; // Pre-fill form with product data
+    this.newProduct = { ...product };
+
   }
 
-  deleteProduct(id: number): void {
-    this.products = this.products.filter(product => product.id !== id);
-    this.saveProducts();
-  }
-
-  // Save products to localStorage
-  saveProducts(): void {
-    localStorage.setItem('products', JSON.stringify(this.products));
+  deleteProduct(id: string): void {
+    this.productService.deleteProduct(id)
+      .then(() => {
+        this.loadProducts();
+      })
+      .catch((error) => console.error('Error deleting product: ', error));
   }
 
   
   resetForm(): void {
-    this.newProduct = { id: 0, name: '', description: '', price: 0 };
-    this.isEditMode = false;
-    this.editingProductId = null;
-    this.toggleForm();  
-  }
+    this.newProduct = {
+      id: '',
+      name: '',
+      description: '',
+      price: 0,
+      offerprice: '',
+      uploadimg: '',
+      category:'',
+    };
+    this.imagePreview = null;
+    this.isEditMode = false; 
+    this.editingProductId = null;
+  }
 }

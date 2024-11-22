@@ -20,5 +20,5 @@ export class CategoryService {
     this.categoriesSource.next(currentCategories);
 
     localStorage.setItem('categories', JSON.stringify(currentCategories));
-  }
+  }
 }

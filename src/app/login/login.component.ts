@@ -10,32 +10,45 @@ import { Router } from '@angular/router';
 export class LoginComponent {
   email: string = '';
   password: string = '';
-  loginError: string | null = null;
+  errorMessage: string = '';
 
-  constructor(private afAuth: AngularFireAuth, private router: Router) {}
+  constructor(
+    private afAuth: AngularFireAuth,
+    private router: Router
+  ) {}
 
-  onLogin() {
-    this.loginError = null;
+  login() {
+    if (!this.email || !this.password) {
+      this.errorMessage = 'Please fill in both fields';
+      return;
+    }
 
-    this.afAuth
-      .signInWithEmailAndPassword(this.email, this.password)
+    this.afAuth.signInWithEmailAndPassword(this.email, this.password)
       .then((userCredential) => {
-        console.log('Login successful');
+        console.log('Login successful:', userCredential.user);
+        // Redirect to ProductComponent after successful login
         this.router.navigate(['/product']);
       })
       .catch((error) => {
-        console.error('Login failed', error);
-        this.handleLoginError(error);
+        this.errorMessage = error.message;
+        console.error('Login error:', error);
       });
   }
 
-  private handleLoginError(error: any) {
-    if (error.code === 'auth/user-not-found') {
-      this.loginError = 'No user found with this email.';
-    } else if (error.code === 'auth/wrong-password') {
-      this.loginError = 'Incorrect password.';
-    } else {
-      this.loginError = 'An error occurred. Please try again.';
+  signUp() {
+    if (!this.email || !this.password) {
+      this.errorMessage = 'Please fill in both fields';
+      return;
     }
+
+    this.afAuth.createUserWithEmailAndPassword(this.email, this.password)
+      .then((userCredential) => {
+        console.log('Signup successful:', userCredential.user);
+        this.router.navigate(['/product']);
+      })
+      .catch((error) => {
+        this.errorMessage = error.message;
+        console.error('Signup error:', error);
+      });
   }
 }

@@ -67,6 +67,6 @@ export class CategoryComponent implements OnInit {
   resetForm() {
     this.name = '';
     this.image = null;
-    this.imagePreview = null;
-  }
+    this.imagePreview = null;
+  }
 }

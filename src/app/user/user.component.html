@@ -1,33 +1,24 @@
-<app-header></app-header>
-<app-sidebar></app-sidebar>
-
-<div class="user-table-container">
-  <h2>User Information</h2>
-
-  <div *ngIf="passwordError" class="alert alert-danger">
-    Password must be at least 6 characters long.
+<div class="user-container">
+  <!-- User Form Section -->
+  <div class="user-form">
+    <h2>{{ userId ? 'Edit User' : 'Create User' }}</h2>
+    <input type="text" [(ngModel)]="firstName" placeholder="First Name" />
+    <input type="text" [(ngModel)]="lastName" placeholder="Last Name" />
+    <input type="email" [(ngModel)]="email" placeholder="Email" />
+    <input type="password" [(ngModel)]="password" placeholder="Password" />
+    <button (click)="userId ? saveUser() : createUser()">
+      {{ userId ? 'Save Changes' : 'Add User' }}
+    </button>
   </div>
 
-  <div *ngIf="isLoading" class="loading-spinner">
-    <p>Saving...</p>
-  </div>
-
-  <form (ngSubmit)="userToEditId ? updateUser() : addUser()">
-    <input [(ngModel)]="firstName" name="firstName" placeholder="First Name" required />
-    <input [(ngModel)]="lastName" name="lastName" placeholder="Last Name" required />
-    <input [(ngModel)]="email" name="email" placeholder="Email" type="email" required />
-    <input [(ngModel)]="password" name="password" placeholder="Password" type="password" required />
-    <button type="submit" [disabled]="isLoading">{{ userToEditId ? 'Update User' : 'Add User' }}</button>
-  </form>
-
-  <table class="user-table">
+  <!-- Table displaying user data -->
+  <table *ngIf="users.length > 0" class="user-table">
     <thead>
       <tr>
         <th>First Name</th>
         <th>Last Name</th>
         <th>Email</th>
-        <th>Password</th>
-        <th>Actions</th> <!-- Actions column header -->
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -35,15 +26,12 @@
         <td>{{ user.firstName }}</td>
         <td>{{ user.lastName }}</td>
         <td>{{ user.email }}</td>
-        <td>••••••</td> <!-- Mask password -->
         <td>
-          <!-- Edit Button -->
-          <button (click)="editUser(user)">
-            <i class="fas fa-edit"></i> Edit
+         <button (click)="editUser(user)" class="icon-btn">
+            <i class="fa fa-edit"></i> <!-- Edit Icon -->
           </button>
-          <!-- Delete Button with delete-btn class -->
-          <button (click)="removeUser(user.id)" class="delete-btn">
-            <i class="fas fa-trash"></i> Remove
+          <button (click)="deleteUser(user.id)" class="icon-btn">
+            <i class="fa fa-trash"></i> <!-- Delete Icon -->
           </button>
         </td>
       </tr>
